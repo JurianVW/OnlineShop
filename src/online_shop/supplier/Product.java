@@ -1,43 +1,62 @@
 package online_shop.supplier;
 
-public class Product {
-    private Integer id;
-    private Double purchasePrice;
-    private Integer amount;
-    private Integer edition;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
 
-    public Product(){
+public class Product {
+    private final SimpleStringProperty name;
+    private final SimpleIntegerProperty id;
+    private final SimpleDoubleProperty purchasePrice;
+    private final SimpleIntegerProperty amount;
+    private final SimpleIntegerProperty edition;
+
+    public Product(String name, Integer id, Double purchasePrice, Integer amount, Integer edition) {
+        this.name = new SimpleStringProperty(name);
+        this.id = new SimpleIntegerProperty(id);
+        this.purchasePrice = new SimpleDoubleProperty(purchasePrice);
+        this.amount = new SimpleIntegerProperty(amount);
+        this.edition = new SimpleIntegerProperty(edition);
     }
 
-    public Product(Integer id, Double purchasePrice, Integer amount, Integer edition) {
+    public String getName() {
+        return name.get();
+    }
 
+    public void setName(String name){
+        this.name.set(name);
+    }
+
+    public int getId() {
+        return id.get();
     }
 
     public Double getPurchasePrice() {
-        throw new UnsupportedOperationException();
+        return purchasePrice.get();
     }
 
     public void setPurchasePrice(Double price) {
-        throw new UnsupportedOperationException();
+        this.purchasePrice.set(price);
     }
 
     public Integer getAmount() {
-        throw new UnsupportedOperationException();
+        return amount.get();
     }
 
     public void setAmount(Integer amount) {
-        throw new UnsupportedOperationException();
+        this.amount.set(amount);
     }
 
     public Integer getEdition() {
-        throw new UnsupportedOperationException();
+        return edition.get();
     }
 
-    public void setEdition(Integer edition){
-        throw new UnsupportedOperationException();
+    public void setEdition(Integer edition) {
+        this.edition.set(edition);
     }
 
-    public void sell(Integer amount){
+    public void sell(Integer amount) {
         throw new UnsupportedOperationException();
+        // this.amount -= amount;
     }
 }

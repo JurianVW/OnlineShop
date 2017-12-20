@@ -6,8 +6,10 @@ public class ShopProduct extends Product {
     private Double price;
     private String description;
 
-    public ShopProduct(Double price, String description){
-
+    public ShopProduct(Product product, Double price, String description){
+        super(product.getName(), product.getId(), product.getPurchasePrice(), product.getAmount(), product.getEdition());
+        this.price = price;
+        this.description = description;
     }
 
     public Double getPrice() {

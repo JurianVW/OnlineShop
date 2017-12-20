@@ -6,9 +6,43 @@ import java.rmi.Remote;
 import java.util.List;
 
 public interface IShop extends Remote {
+    /**
+     *
+     * @return the list of all shopProducts of that shop
+     */
     List<ShopProduct> getShopProducts();
+
+    /**
+     *
+     * @param shopProducts
+     * @param accountId
+     * @param session
+     */
     void orderProducts(List<ShopProduct> shopProducts, Integer accountId, String session);
-    Account logIn(String username, String password);
+
+    /**
+     *
+     * @param username
+     * @param password
+     * @return the account that belongs to the user with the given info
+     */
+    boolean logIn(String username, String password);
+
+    /**
+     *
+     * @param session
+     */
     void logOut(String session);
+
+    /**
+     *
+     * @param name
+     * @param email
+     * @param streetname
+     * @param houseNumber
+     * @param postalCode
+     * @param place
+     * @return the account that is made with the given info
+     */
     Account register(String name, String email, String streetname, String houseNumber, String postalCode, String place);
 }

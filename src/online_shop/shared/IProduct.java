@@ -20,4 +20,10 @@ public interface IProduct extends Serializable{
      * @return the edition number, which is how many there are made of this product
      */
     Integer getEdition();
+
+    /**
+     *
+     * @return the name of the product
+     */
+    String getName();
 }
