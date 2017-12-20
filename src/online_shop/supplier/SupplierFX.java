@@ -23,9 +23,12 @@ import java.rmi.RemoteException;
 
 public class SupplierFX extends Application {
     private Supplier supplier;
+    private static final int port = 1098;
 
     private float sceneWidth = 500;
     private float sceneHeight = 500;
+
+    private ObservableList<ProductTable> observeProducts;
 
     public static void main(String args[]) {
         launch(args);
@@ -38,7 +41,7 @@ public class SupplierFX extends Application {
 
     private void startApplication(Stage primaryStage) {
         try {
-            supplier = new Supplier();
+            supplier = new Supplier(port, "Novamedia");
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -60,8 +63,8 @@ public class SupplierFX extends Application {
         grid.setVgap(10);
         grid.setPadding(new Insets(25, 25, 25, 25));
 
-        ObservableList<Product> observeProducts = FXCollections.observableArrayList();
-        observeProducts.addAll(supplier.getProducts());
+        observeProducts = FXCollections.observableArrayList();
+       resetList();
 
         TableView table = new TableView();
         table.setEditable(true);
@@ -69,40 +72,40 @@ public class SupplierFX extends Application {
 
         TableColumn nameCol = new TableColumn("Name");
         nameCol.setPrefWidth(200);
-        nameCol.setCellValueFactory(new PropertyValueFactory<Product, String>("name"));
+        nameCol.setCellValueFactory(new PropertyValueFactory<ProductTable, String>("name"));
         nameCol.setCellFactory(TextFieldTableCell.forTableColumn());
         nameCol.setOnEditCommit(
-                (EventHandler<TableColumn.CellEditEvent<Product, String>>) t -> (t.getTableView().getItems().get(
+                (EventHandler<TableColumn.CellEditEvent<ProductTable, String>>) t -> (t.getTableView().getItems().get(
                         t.getTablePosition().getRow())
                 ).setName(t.getNewValue())
         );
 
         TableColumn purchasePriceCol = new TableColumn("Purchase Price");
         purchasePriceCol.setPrefWidth(100);
-        purchasePriceCol.setCellValueFactory(new PropertyValueFactory<Product, Double>("purchasePrice"));
+        purchasePriceCol.setCellValueFactory(new PropertyValueFactory<ProductTable, Double>("purchasePrice"));
         purchasePriceCol.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
         purchasePriceCol.setOnEditCommit(
-                (EventHandler<TableColumn.CellEditEvent<Product, Double>>) t -> (t.getTableView().getItems().get(
+                (EventHandler<TableColumn.CellEditEvent<ProductTable, Double>>) t -> (t.getTableView().getItems().get(
                         t.getTablePosition().getRow())
                 ).setPurchasePrice(Double.valueOf(t.getNewValue()))
         );
 
         TableColumn amountCol = new TableColumn("Amount");
         amountCol.setPrefWidth(60);
-        amountCol.setCellValueFactory(new PropertyValueFactory<Product, Integer>("amount"));
+        amountCol.setCellValueFactory(new PropertyValueFactory<ProductTable, Integer>("amount"));
         amountCol.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
         amountCol.setOnEditCommit(
-                (EventHandler<TableColumn.CellEditEvent<Product, Integer>>) t -> (t.getTableView().getItems().get(
+                (EventHandler<TableColumn.CellEditEvent<ProductTable, Integer>>) t -> (t.getTableView().getItems().get(
                         t.getTablePosition().getRow())
                 ).setAmount(t.getNewValue())
         );
 
         TableColumn editionCol = new TableColumn("Edition");
         editionCol.setPrefWidth(60);
-        editionCol.setCellValueFactory(new PropertyValueFactory<Product, Integer>("edition"));
+        editionCol.setCellValueFactory(new PropertyValueFactory<ProductTable, Integer>("edition"));
         editionCol.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
         editionCol.setOnEditCommit(
-                (EventHandler<TableColumn.CellEditEvent<Product, Integer>>) t -> (t.getTableView().getItems().get(
+                (EventHandler<TableColumn.CellEditEvent<ProductTable, Integer>>) t -> (t.getTableView().getItems().get(
                         t.getTablePosition().getRow())
                 ).setEdition(t.getNewValue())
         );
@@ -134,8 +137,7 @@ public class SupplierFX extends Application {
                     Integer.valueOf(addAmount.getText()),
                     Integer.valueOf(addEdition.getText())
             ));
-            observeProducts.clear();
-            observeProducts.addAll(supplier.getProducts());
+            resetList();
             addName.clear();
             addPurchasePrice.clear();
             addAmount.clear();
@@ -157,8 +159,7 @@ public class SupplierFX extends Application {
         btnRemoveProduct.setOnAction(e -> {
             Product p = (Product) table.getSelectionModel().getSelectedItem();
             supplier.removeProduct(p);
-            observeProducts.clear();
-            observeProducts.addAll(supplier.getProducts());
+            resetList();
         });
         hbBtns.getChildren().add(btnRemoveProduct);
 
@@ -188,6 +189,14 @@ public class SupplierFX extends Application {
     private void restartApplication(Stage primaryStage) {
         startApplication(primaryStage);
     }
+
+    private void resetList(){
+        observeProducts.clear();
+        for (Product p : supplier.getProducts()) {
+            observeProducts.add(new ProductTable(p));
+        }
+    }
+
 }
 
 
