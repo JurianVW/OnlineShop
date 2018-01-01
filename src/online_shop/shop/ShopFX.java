@@ -3,6 +3,7 @@ package online_shop.shop;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -17,6 +18,7 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.util.converter.DoubleStringConverter;
 import javafx.util.converter.IntegerStringConverter;
+import online_shop.shared.IProduct;
 import online_shop.shared.LoginWindow;
 import online_shop.supplier.Product;
 import online_shop.supplier.Supplier;
@@ -29,6 +31,8 @@ public class ShopFX extends Application {
     private float sceneWidth = 700;
     private float sceneHeight = 500;
 
+    ObservableList<ShopProduct> observeProducts = FXCollections.observableArrayList();
+
     public static void main(String args[]) {
         launch(args);
     }
@@ -40,7 +44,7 @@ public class ShopFX extends Application {
 
     private void startApplication(Stage primaryStage) {
         try {
-            shop = new Shop();
+            shop = new Shop(this);
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -62,7 +66,6 @@ public class ShopFX extends Application {
         grid.setVgap(10);
         grid.setPadding(new Insets(25, 25, 25, 25));
 
-        ObservableList<Product> observeProducts = FXCollections.observableArrayList();
         observeProducts.addAll(shop.getShopProducts());
 
         TableView table = new TableView();
@@ -90,9 +93,14 @@ public class ShopFX extends Application {
         priceCol.setCellValueFactory(new PropertyValueFactory<ShopProduct, Double>("price"));
         priceCol.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
         priceCol.setOnEditCommit(
-                (EventHandler<TableColumn.CellEditEvent<ShopProduct, Double>>) t -> (t.getTableView().getItems().get(
-                        t.getTablePosition().getRow())
-                ).setPrice(Double.valueOf(t.getNewValue()))
+                (EventHandler<TableColumn.CellEditEvent<ShopProduct, Double>>) t -> {
+                    (t.getTableView().getItems().get(
+                            t.getTablePosition().getRow())
+                    ).setPrice(Double.valueOf(t.getNewValue()));
+                    shop.shopProductChanged((t.getTableView().getItems().get(
+                            t.getTablePosition().getRow())
+                    ));
+                }
         );
 
         TableColumn descriptionCol = new TableColumn("Description");
@@ -100,9 +108,14 @@ public class ShopFX extends Application {
         descriptionCol.setCellValueFactory(new PropertyValueFactory<Product, Double>("description"));
         descriptionCol.setCellFactory(TextFieldTableCell.forTableColumn());
         descriptionCol.setOnEditCommit(
-                (EventHandler<TableColumn.CellEditEvent<ShopProduct, String>>) t -> (t.getTableView().getItems().get(
-                        t.getTablePosition().getRow())
-                ).setDescription(t.getNewValue())
+                (EventHandler<TableColumn.CellEditEvent<ShopProduct, String>>) t -> {
+                    (t.getTableView().getItems().get(
+                            t.getTablePosition().getRow())
+                    ).setDescription(t.getNewValue());
+                    shop.shopProductChanged((t.getTableView().getItems().get(
+                            t.getTablePosition().getRow())
+                    ));
+                }
         );
 
         table.getColumns().addAll(nameCol, purchasePriceCol, amountCol, editionCol, priceCol, descriptionCol);
@@ -143,5 +156,19 @@ public class ShopFX extends Application {
 
     private void restartApplication(Stage primaryStage) {
         startApplication(primaryStage);
+    }
+
+    private void resetList() {
+        observeProducts.clear();
+        for (ShopProduct p : shop.getShopProducts()) {
+            observeProducts.add(p);
+        }
+    }
+
+    public void update() {
+        observeProducts.clear();
+        for (ShopProduct p : shop.getShopProducts()) {
+            observeProducts.add(p);
+        }
     }
 }

@@ -20,6 +20,14 @@ public class Product implements IProduct {
         this.edition = edition;
     }
 
+    public Product(ProductTable productTable){
+        this.name = productTable.getName();
+        this.id = productTable.getId();
+        this.purchasePrice = productTable.getPurchasePrice();
+        this.amount = productTable.getAmount();
+        this.edition = productTable.getEdition();
+    }
+
     public String getName() {
         return name;
     }

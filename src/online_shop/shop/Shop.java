@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Shop extends UnicastRemoteObject implements IShop {
+    private ShopFX shopFX;
+
     private RemotePublisher remotePublisher;
 
     private ShopCommunicator shopCommunicator;
@@ -21,22 +23,33 @@ public class Shop extends UnicastRemoteObject implements IShop {
 
     private DatabaseShop database;
 
-    public Shop() throws RemoteException {
+    public Shop(ShopFX shopFX) throws RemoteException {
+        this.shopFX = shopFX;
         database = new DatabaseShop();
-        shopCommunicator = new ShopCommunicator();
+        shopCommunicator = new ShopCommunicator(this);
+        updateSupplierProducts(shopCommunicator.getSupplierProducts());
     }
 
     public List<ShopProduct> getShopProducts() {
-        List<ShopProduct> shopProducts = new ArrayList<>();
-        shopProducts.addAll(database.getShopProducts());
-        try {
-            for (Product p : shopCommunicator.getSupplierProducts()) {
-                shopProducts.add(new ShopProduct(p));
-            }
-        } catch (RemoteException ex) {
-            ex.printStackTrace();
-        }
-        return shopProducts;
+          return database.getShopProducts();
+    }
+
+    public void updateSupplierProducts(List<Product> products){
+       database.updateSupplierProducts(products);
+    }
+
+    public void addShopProduct(Product product){
+        database.addShopProduct(new ShopProduct(product));
+        updateFX();
+    }
+
+    public void shopProductChanged(ShopProduct product){
+        database.updateShopProduct(product);
+    }
+
+    public void productChanged(Product product){
+        database.updateProduct(product);
+        updateFX();
     }
 
     public void orderProducts(List<ShopProduct> shopProducts, Integer accountId, String session) {
@@ -58,5 +71,9 @@ public class Shop extends UnicastRemoteObject implements IShop {
 
     public Account register(String name, String email, String streetname, String houseNumber, String postalCode, String place) {
         throw new UnsupportedOperationException();
+    }
+
+    private void updateFX(){
+        shopFX.update();
     }
 }

@@ -38,7 +38,8 @@ public class Supplier extends UnicastRemoteObject implements ISupplier {
         //Create publisher
         try {
             publisher = new RemotePublisher();
-            publisher.registerProperty("Products");
+            publisher.registerProperty("NewProduct");
+            publisher.registerProperty("ChangedProduct");
         } catch (RemoteException e) {
             LOGGER.severe("Server: Cannot create publisher");
             LOGGER.severe("Server: RemoteException " + e.getMessage());
@@ -69,11 +70,16 @@ public class Supplier extends UnicastRemoteObject implements ISupplier {
 
     public void addProduct(Product product) {
         database.addProduct(product);
-        informProducts();
+        informNewProduct(product);
     }
 
     public void removeProduct(Product product) {
         database.removeProduct(product);
+    }
+
+    public void productChanged(Product product){
+        database.productChanged(product);
+        informChangedProduct(product);
     }
 
     public boolean logIn(String username, String password) {
@@ -91,11 +97,17 @@ public class Supplier extends UnicastRemoteObject implements ISupplier {
         //TODO: better code
     }
 
-    private void informProducts() {
-        List<IProduct> iProducts = new ArrayList<>();
-        iProducts.addAll(products);
+    private void informNewProduct(Product product) {
         try {
-            publisher.inform("Products", null, iProducts);
+            publisher.inform("NewProduct", null, (IProduct) product);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void informChangedProduct(Product product){
+        try {
+            publisher.inform("ChangedProduct", null, (IProduct) product);
         } catch (RemoteException e) {
             e.printStackTrace();
         }

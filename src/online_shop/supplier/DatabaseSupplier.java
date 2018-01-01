@@ -34,6 +34,14 @@ public class DatabaseSupplier {
         products.remove(product);
     }
 
+    public void productChanged(Product product){
+        for (Product p: products) {
+            if(p.getId() == product.getId()){
+                p = product;
+            }
+        }
+    }
+
     public List<Product> getProducts(){
         return products;
     }

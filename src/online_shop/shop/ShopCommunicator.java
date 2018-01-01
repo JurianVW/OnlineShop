@@ -17,6 +17,8 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
 
 public class ShopCommunicator extends UnicastRemoteObject implements IRemotePropertyListener {
+    private Shop shop;
+
     private Registry registry = null;
 
     private IRemotePublisherForListener publisher;
@@ -29,7 +31,8 @@ public class ShopCommunicator extends UnicastRemoteObject implements IRemoteProp
     private InetAddress localhost;
 
 
-    protected ShopCommunicator() throws RemoteException {
+    protected ShopCommunicator(Shop shop) throws RemoteException {
+        this.shop = shop;
         try {
             localhost = InetAddress.getLocalHost();
         } catch (UnknownHostException ex) {
@@ -41,7 +44,8 @@ public class ShopCommunicator extends UnicastRemoteObject implements IRemoteProp
         try {
             registry = LocateRegistry.getRegistry(localhost.getHostAddress(), portSupplier);
             publisher = (IRemotePublisherForListener) registry.lookup(remoteSupplierName + "Publisher");
-            publisher.subscribeRemoteListener(this, "Products");
+            publisher.subscribeRemoteListener(this, "NewProduct");
+            publisher.subscribeRemoteListener(this, "ChangedProduct");
             supplier = (ISupplier) registry.lookup(remoteSupplierName);
         } catch (RemoteException ex) {
             System.out.println("Client: Cannot locate registry");
@@ -56,9 +60,13 @@ public class ShopCommunicator extends UnicastRemoteObject implements IRemoteProp
 
     @Override
     public void propertyChange(PropertyChangeEvent propertyChangeEvent) throws RemoteException {
-        List<IProduct> iProducts = (List<IProduct>) propertyChangeEvent.getNewValue();
-        for (IProduct p : iProducts) {
-            System.out.print(p.getName());
+        switch (propertyChangeEvent.getPropertyName()) {
+            case "ChangedProduct":
+                shop.productChanged((Product)propertyChangeEvent.getNewValue());
+                break;
+            case "NewProduct":
+                shop.addShopProduct((Product)propertyChangeEvent.getNewValue());
+                break;
         }
     }
 

@@ -2,9 +2,10 @@ package online_shop.shop;
 
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
+import online_shop.shared.IShopProduct;
 import online_shop.supplier.Product;
 
-public class ShopProduct extends Product {
+public class ShopProduct extends Product implements IShopProduct {
     private final SimpleDoubleProperty price;
     private final SimpleStringProperty description;
 
