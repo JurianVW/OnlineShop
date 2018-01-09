@@ -152,7 +152,7 @@ public class SupplierFX extends Application {
         addButton.setOnAction(e -> {
             supplier.addProduct(new Product(
                     addName.getText(),
-                    1,
+                    1008,
                     Double.valueOf(addPurchasePrice.getText()),
                     Integer.valueOf(addAmount.getText()),
                     Integer.valueOf(addEdition.getText())
@@ -177,7 +177,8 @@ public class SupplierFX extends Application {
 
         Button btnRemoveProduct = new Button("Remove product");
         btnRemoveProduct.setOnAction(e -> {
-            Product p = (Product) table.getSelectionModel().getSelectedItem();
+            ProductTable pt = (ProductTable) table.getSelectionModel().getSelectedItem();
+            Product p = pt.getProduct();
             supplier.removeProduct(p);
             resetList();
         });

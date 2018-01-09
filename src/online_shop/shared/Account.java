@@ -9,7 +9,10 @@ public class Account {
     private Address address;
 
     public Account(Integer id, AccountType accountType, String name, String email) {
-
+        this.id = id;
+        this.accountType = accountType;
+        this.name = name;
+        this.email = email;
     }
 
     public Account(Integer id, AccountType accountType, String name, String email, String streetName, String houseNumber, String postalCode, String place) {
@@ -17,18 +20,18 @@ public class Account {
     }
 
     public Integer getId() {
-        throw new UnsupportedOperationException();
+        return id;
     }
 
     public AccountType getAccountType() {
-        throw new UnsupportedOperationException();
+        return accountType;
     }
 
     public String getName() {
-        throw new UnsupportedOperationException();
+       return name;
     }
 
     public String getEmail() {
-        throw new UnsupportedOperationException();
+        return email;
     }
 }

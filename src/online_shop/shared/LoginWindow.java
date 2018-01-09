@@ -12,29 +12,32 @@ import javafx.scene.layout.HBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import online_shop.client.Client;
 import online_shop.shop.Shop;
 import online_shop.supplier.Supplier;
 
 public class LoginWindow {
-    public Stage loginStage = new Stage();
+    public Stage loginStage;
 
+    private Client client;
     private Shop shop;
     private Supplier supplier;
     private AccountType loginType;
 
-    private Account account;
-
     private String welcomeMessage = "Login";
 
-    public LoginWindow(Shop shop, boolean client) {
-        if (client) {
-            loginType = AccountType.CUSTOMER;
-        } else {
-            loginType = AccountType.SHOPEMPLOYEE;
-            welcomeMessage = "Shop Login";
-        }
+    public LoginWindow(Client client) {
+        loginType = AccountType.CUSTOMER;
+        this.client = client;
+        createStage();
+    }
+
+    public LoginWindow(Shop shop) {
+        loginType = AccountType.SHOPEMPLOYEE;
+        welcomeMessage = "Shop Login";
         this.shop = shop;
         createStage();
     }
@@ -85,13 +88,20 @@ public class LoginWindow {
             HBox hbBtnRegister = new HBox(10);
             hbBtnRegister.setAlignment(Pos.BOTTOM_RIGHT);
             hbBtnRegister.getChildren().add(btnRegister);
-            grid.add(hbBtnRegister,1,5);
+            grid.add(hbBtnRegister, 1, 5);
 
             final Text registerText = new Text("Don't have an account yet?");
-            grid.add(registerText, 0,5,2,1);
+            grid.add(registerText, 0, 5, 2, 1);
 
             btnRegister.setOnAction(e -> {
-                errorMessage.setText("Not implemented yet");
+                RegisterWindow registerWindow = new RegisterWindow(client);
+                registerWindow.registerStage.setOnHidden(event -> {
+                    if (registerWindow.succes) {
+                        loginStage.close();
+                    } else {
+                        loginStage.show();
+                    }
+                });
             });
         }
 
@@ -106,14 +116,14 @@ public class LoginWindow {
                     }
                     break;
                 case SHOPEMPLOYEE:
-                    if (shop.logIn(userTextField.getText(), pwBox.getText())) {
+                    if (shop.logInShop(userTextField.getText(), pwBox.getText())) {
                         loginStage.close();
                     } else {
                         loginFailed = true;
                     }
                     break;
                 case CUSTOMER:
-                    if (shop.logIn(userTextField.getText(), pwBox.getText())) {
+                    if (client.logIn(userTextField.getText(), pwBox.getText()) != null) {
                         loginStage.close();
                     } else {
                         loginFailed = true;

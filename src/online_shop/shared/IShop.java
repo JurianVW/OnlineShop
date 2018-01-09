@@ -27,7 +27,7 @@ public interface IShop extends Remote {
      * @param password
      * @return the account that belongs to the user with the given info
      */
-    boolean logIn(String username, String password)throws RemoteException;
+    String logIn(String username, String password)throws RemoteException;
 
     /**
      *
@@ -45,5 +45,5 @@ public interface IShop extends Remote {
      * @param place
      * @return the account that is made with the given info
      */
-    Account register(String name, String email, String streetname, String houseNumber, String postalCode, String place)throws RemoteException;
+    String register(String name, String email, String password, String streetname, String houseNumber, String postalCode, String place)throws RemoteException;
 }

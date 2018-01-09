@@ -4,7 +4,6 @@ import online_shop.shared.Account;
 import online_shop.shared.AccountType;
 import online_shop.supplier.Product;
 
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +20,8 @@ public class DatabaseShop {
     public Account logIn(String username, String password) {
         if (username.equals("Jurian") && password.equals("hoi")) {
             return new Account(2, AccountType.SHOPEMPLOYEE, "Jurian van Woerkom", "jurianvanwoerkom@hotmail.com");
+        } else if (username.equals("Klant") && password.equals("klant")) {
+            return new Account(5, AccountType.CUSTOMER, "Jurian van Woerkom", "jurianvanwoerkom@hotmail.com");
         }
         return null;
     }
@@ -30,15 +31,16 @@ public class DatabaseShop {
     }
 
     public void updateShopProduct(ShopProduct product) {
+        Integer index = Integer.MAX_VALUE;
         for (ShopProduct sp : shopProducts) {
             if (sp.getId() == product.getId()) {
-                sp = product;
+                index = shopProducts.indexOf(sp);
+                break;
             }
         }
-    }
-
-    public void removeShopProduct(ShopProduct product) {
-        shopProducts.remove(product);
+        if (shopProducts.size() > index) {
+            shopProducts.set(index, product);
+        }
     }
 
     public void updateSupplierProducts(List<Product> supplierProducts) {
@@ -54,8 +56,27 @@ public class DatabaseShop {
         }
     }
 
+    public void removeSupplierProduct(Product product) {
+        ShopProduct shopProduct = null;
+        for (ShopProduct sp : shopProducts) {
+            if (sp.getId() == product.getId()) {
+                shopProduct = sp;
+            }
+        }
+        if (shopProduct != null) shopProducts.remove(shopProduct);
+    }
+
     public List<ShopProduct> getShopProducts() {
         return shopProducts;
+    }
+
+    public ShopProduct getShopProduct(Product product) {
+        for (ShopProduct sp : shopProducts) {
+            if (sp.getId() == product.getId()) {
+                return sp;
+            }
+        }
+        return null;
     }
 
     public void updateProduct(Product product) {

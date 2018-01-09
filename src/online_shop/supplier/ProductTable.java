@@ -4,6 +4,7 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import online_shop.shared.IProduct;
+import online_shop.supplier.Product;
 
 public class ProductTable implements IProduct {
     private final SimpleStringProperty name;
@@ -11,6 +12,7 @@ public class ProductTable implements IProduct {
      private final SimpleDoubleProperty purchasePrice;
      private final SimpleIntegerProperty amount;
      private final SimpleIntegerProperty edition;
+     private Product product;
 
     public ProductTable(Product product) {
         this.name = new SimpleStringProperty(product.getName());
@@ -18,6 +20,7 @@ public class ProductTable implements IProduct {
         this.purchasePrice = new SimpleDoubleProperty(product.getPurchasePrice());
         this.amount = new SimpleIntegerProperty(product.getAmount());
         this.edition = new SimpleIntegerProperty(product.getEdition());
+        this.product = product;
     }
 
     public String getName() {
@@ -54,5 +57,9 @@ public class ProductTable implements IProduct {
 
     public void setEdition(Integer edition) {
         this.edition.set(edition);
+    }
+
+    public Product getProduct(){
+        return this.product;
     }
 }

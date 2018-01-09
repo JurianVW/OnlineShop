@@ -6,34 +6,40 @@ import online_shop.shared.IShopProduct;
 import online_shop.supplier.Product;
 
 public class ShopProduct extends Product implements IShopProduct {
-    private final SimpleDoubleProperty price;
-    private final SimpleStringProperty description;
+    private Double price;
+    private String description;
 
     public ShopProduct(Product product){
         super(product.getName(), product.getId(), product.getPurchasePrice(), product.getAmount(), product.getEdition());
-        this.price = new SimpleDoubleProperty(0);
-        this.description = new SimpleStringProperty("");
+        this.price = 0.0;
+        this.description = "";
     }
 
     public ShopProduct(Product product, Double price, String description){
         super(product.getName(), product.getId(), product.getPurchasePrice(), product.getAmount(), product.getEdition());
-        this.price = new SimpleDoubleProperty(price);
-        this.description = new SimpleStringProperty(description);
+        this.price = price;
+        this.description = description;
+    }
+
+    public ShopProduct(ShopProductTable shopProductTable){
+        super(shopProductTable.getName(), shopProductTable.getId(), shopProductTable.getPurchasePrice(), shopProductTable.getAmount(), shopProductTable.getEdition());
+        this.price = shopProductTable.getPrice();
+        this.description = shopProductTable.getDescription();
     }
 
     public Double getPrice() {
-      return  price.get();
+      return  price;
     }
 
     public void setPrice(Double price){
-        this.price.set(price);
+        this.price = price;
     }
 
     public String getDescription() {
-     return description.get();
+     return description;
     }
 
     public void setDescription(String description){
-       this.description.set(description);
+       this.description = description;
     }
 }
