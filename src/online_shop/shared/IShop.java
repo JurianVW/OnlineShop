@@ -27,7 +27,7 @@ public interface IShop extends Remote {
      * @param password
      * @return the account that belongs to the user with the given info
      */
-    String logIn(String username, String password)throws RemoteException;
+    Account logIn(String username, String password, String session)throws RemoteException;
 
     /**
      *

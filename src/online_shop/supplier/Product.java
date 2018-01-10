@@ -17,7 +17,7 @@ public class Product implements IProduct {
         this.edition = edition;
     }
 
-    public Product(ProductTable productTable){
+    public Product(ProductTable productTable) {
         this.name = productTable.getName();
         this.id = productTable.getId();
         this.purchasePrice = productTable.getPurchasePrice();
@@ -62,7 +62,6 @@ public class Product implements IProduct {
     }
 
     public void sell(Integer amount) {
-        throw new UnsupportedOperationException();
-        // this.amount -= amount;
+        this.amount -= amount;
     }
 }

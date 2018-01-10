@@ -1,10 +1,13 @@
 package online_shop.client;
 
+import online_shop.shared.Account;
 import online_shop.shared.IShopProduct;
 import online_shop.shop.ShopProduct;
 
 import java.rmi.RemoteException;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class Client {
     private ClientFX clientFX;
@@ -14,16 +17,18 @@ public class Client {
     private List<ShopProduct> cart;
 
     private String session;
+    private Account account;
 
     public Client(ClientFX clientFX) throws RemoteException {
         this.clientFX = clientFX;
         clientCommunicator = new ClientCommunicator(this);
     }
 
-    public String logIn(String username, String password) {
+    public Account logIn(String username, String password) {
         try {
-            this.session = clientCommunicator.logIn(username, password);
-            return session;
+            this.session = "hashhereplz";
+            this.account = clientCommunicator.logIn(username, password, session);
+            return account;
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -39,20 +44,12 @@ public class Client {
         return null;
     }
 
-    public void addToCart(ShopProduct product, int amount) {
-        for (int i = 0; i < amount; i++) {
-            cart.add(product);
+    public void orderProducts(List<ShopProduct> shopProducts) {
+        try {
+            clientCommunicator.orderProducts(shopProducts, account.getId(), session);
+        } catch (RemoteException e) {
+            e.printStackTrace();
         }
-    }
-
-    public void removeFromCart(IShopProduct product, int amount) {
-        for (int i = 0; i < amount; i++) {
-            cart.remove(cart.indexOf(product));
-        }
-    }
-
-    public void orderProducts() {
-        throw new UnsupportedOperationException();
     }
 
     public List<ShopProduct> getShopProducts() {
@@ -65,18 +62,14 @@ public class Client {
     }
 
     public void changedShopProduct(ShopProduct shopProduct) {
-        updateFX();
+        clientFX.changedShopProduct(shopProduct);
     }
 
     public void removedShopProduct(ShopProduct shopProduct) {
-        updateFX();
+        clientFX.removedShopProduct(shopProduct);
     }
 
     public void newShopProduct(ShopProduct shopProduct) {
-        updateFX();
-    }
-
-    private void updateFX() {
-        clientFX.update();
+        clientFX.newShopProduct(shopProduct);
     }
 }

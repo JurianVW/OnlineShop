@@ -20,6 +20,7 @@ import javafx.util.converter.IntegerStringConverter;
 import online_shop.shared.LoginWindow;
 
 import java.rmi.RemoteException;
+import java.util.List;
 
 public class SupplierFX extends Application {
     private Supplier supplier;
@@ -41,7 +42,7 @@ public class SupplierFX extends Application {
 
     private void startApplication(Stage primaryStage) {
         try {
-            supplier = new Supplier(port, "Novamedia");
+            supplier = new Supplier(this, port, "Novamedia");
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -52,6 +53,9 @@ public class SupplierFX extends Application {
         });
         primaryStage.setOnCloseRequest(e -> exitApplication());
         loginWindow.loginStage.setOnCloseRequest(e -> exitApplication());
+
+        observeProducts = FXCollections.observableArrayList();
+        resetList();
     }
 
     private void showApplication(Stage primaryStage) {
@@ -62,9 +66,6 @@ public class SupplierFX extends Application {
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setPadding(new Insets(25, 25, 25, 25));
-
-        observeProducts = FXCollections.observableArrayList();
-        resetList();
 
         TableView table = new TableView();
         table.setEditable(true);
@@ -199,6 +200,7 @@ public class SupplierFX extends Application {
         // Define title and assign the scene for main window
         primaryStage.setTitle("Supplier");
         primaryStage.setScene(scene);
+        primaryStage.setResizable(false);
         primaryStage.show();
     }
 
@@ -218,6 +220,17 @@ public class SupplierFX extends Application {
         }
     }
 
+    public void orderProducts(List<Product> products) {
+        for (Product p1 : products) {
+            for (ProductTable p2 : observeProducts) {
+                if (p1.getId() == p2.getId()) {
+                    p2.getProduct().sell(1);
+                    supplier.productChanged(p2.getProduct());
+                }
+            }
+        }
+        resetList();
+    }
 }
 
 

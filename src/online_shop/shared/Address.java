@@ -1,6 +1,8 @@
 package online_shop.shared;
 
-public class Address {
+import java.io.Serializable;
+
+public class Address implements Serializable{
     private String streetName;
     private String houseNumber;
     private String postalCode;

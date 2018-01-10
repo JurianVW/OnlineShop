@@ -26,7 +26,7 @@ public class ClientCommunicator extends UnicastRemoteObject implements IRemotePr
     private IRemotePublisherForListener publisher;
     private IShop shop;
 
-    private static final int portShop = 1099;
+    private static final int portShop = 1100;
     private String remoteShopName = "Bol.com";
 
     private InetAddress localhost;
@@ -79,11 +79,15 @@ public class ClientCommunicator extends UnicastRemoteObject implements IRemotePr
         return shop.getShopProducts();
     }
 
-    public String logIn(String username, String password) throws RemoteException {
-        return shop.logIn(username, password);
+    public Account logIn(String username, String password, String session) throws RemoteException {
+        return shop.logIn(username, password, session);
     }
 
     public String register(String name, String email, String password, String streetname, String houseNumber, String postalCode, String place) throws RemoteException {
         return shop.register(name, email, password, streetname, houseNumber, postalCode, place);
+    }
+
+    public void orderProducts(List<ShopProduct> shopProducts, Integer accountId, String session) throws RemoteException {
+        shop.orderProducts(shopProducts, accountId, session);
     }
 }

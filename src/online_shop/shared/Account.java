@@ -1,6 +1,8 @@
 package online_shop.shared;
 
-public class Account {
+import java.io.Serializable;
+
+public class Account implements Serializable{
     Integer id;
     AccountType accountType;
     String name;

@@ -18,6 +18,8 @@ import java.util.logging.Logger;
 public class Supplier extends UnicastRemoteObject implements ISupplier {
     private static final Logger LOGGER = Logger.getLogger(Supplier.class.getName());
 
+    private SupplierFX suppliefFX;
+
     private RemotePublisher publisher;
     private Registry registry;
     private String bindingName;
@@ -29,7 +31,8 @@ public class Supplier extends UnicastRemoteObject implements ISupplier {
 
     private DatabaseSupplier database;
 
-    public Supplier(int port, String supplierName) throws RemoteException {
+    public Supplier(SupplierFX suppliefFX, int port, String supplierName) throws RemoteException {
+        this.suppliefFX = suppliefFX;
         database = new DatabaseSupplier();
         publisher = new RemotePublisher();
         bindingName = supplierName;
@@ -72,16 +75,19 @@ public class Supplier extends UnicastRemoteObject implements ISupplier {
     public void addProduct(Product product) {
         database.addProduct(product);
         informNewProduct(product);
+        this.products = database.getProducts();
     }
 
     public void removeProduct(Product product) {
         database.removeProduct(product);
         informRemovedProduct(product);
+        this.products = database.getProducts();
     }
 
     public void productChanged(Product product) {
         database.productChanged(product);
         informChangedProduct(product);
+        this.products = database.getProducts();
     }
 
     public boolean logIn(String username, String password) {
@@ -97,6 +103,10 @@ public class Supplier extends UnicastRemoteObject implements ISupplier {
         this.products = database.getProducts();
         return products;
         //TODO: better code
+    }
+
+    public void orderProducts(List<Product> products){
+        suppliefFX.orderProducts(products);
     }
 
     private void informNewProduct(Product product) {

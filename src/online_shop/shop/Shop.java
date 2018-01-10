@@ -61,17 +61,23 @@ public class Shop extends UnicastRemoteObject implements IShop {
     }
 
     public void orderProducts(List<ShopProduct> shopProducts, Integer accountId, String session) {
-        throw new UnsupportedOperationException();
+        if(accountSessions.get(session).equals(accountId)){
+            try {
+                shopCommunicator.orderProducts(shopProducts);
+            }
+            catch (RemoteException e){
+                e.printStackTrace();
+            }
+        }
     }
 
-    public String logIn(String username, String password) {
+    public Account logIn(String username, String password, String session) {
         Account a = database.logIn(username, password);
         if (a != null) {
-            String session = "hashhereplz";
-            if (a.getAccountType() == AccountType.CUSTOMER) {
+          if (a.getAccountType() == AccountType.CUSTOMER) {
                 accountSessions.put(session, a.getId());
             }
-            return session;
+            return a;
         }
         return null;
     }

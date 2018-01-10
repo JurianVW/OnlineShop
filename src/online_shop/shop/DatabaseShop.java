@@ -12,9 +12,9 @@ public class DatabaseShop {
 
     public DatabaseShop() {
         shopProducts = new ArrayList<>();
-        shopProducts.add(new ShopProduct(new Product("The Lion King E1", 54, 35.00, 463, 500)));
-        shopProducts.add(new ShopProduct(new Product("The Lion King E2", 55, 59.99, 235, 500)));
-        shopProducts.add(new ShopProduct(new Product("The Jungle Book", 56, 50.00, 800, 800)));
+        shopProducts.add(new ShopProduct(new Product("The Lion King E1", 54, 35.00, 463, 500), 34.65, "With lenticular"));
+        shopProducts.add(new ShopProduct(new Product("The Lion King E2", 55, 59.99, 235, 500),50.0, "With art cards"));
+        shopProducts.add(new ShopProduct(new Product("The Jungle Book", 56, 50.00, 800, 800),12.34, ""));
     }
 
     public Account logIn(String username, String password) {

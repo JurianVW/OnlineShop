@@ -137,6 +137,7 @@ public class ShopFX extends Application {
         // Define title and assign the scene for main window
         primaryStage.setTitle("Shop");
         primaryStage.setScene(scene);
+        primaryStage.setResizable(false);
         primaryStage.show();
     }
 
@@ -149,7 +150,7 @@ public class ShopFX extends Application {
         startApplication(primaryStage);
     }
 
-       public void update() {
+       public synchronized void update() {
         observeProducts.clear();
         for (ShopProduct p : shop.getShopProducts()) {
             observeProducts.add(new ShopProductTable(p));

@@ -13,10 +13,12 @@ import java.beans.PropertyChangeEvent;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.rmi.NotBoundException;
+import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -29,10 +31,10 @@ public class ShopCommunicator extends UnicastRemoteObject implements IRemoteProp
 
     private RemotePublisher publisherShop;
     private IRemotePublisherForListener publisherSupplier;
-    private ISupplier supplier;
+    private List<ISupplier> suppliers = new ArrayList<>();
 
     private static final int portSupplier = 1098;
-    private static final int portShop = 1099;
+    private static final int portShop = 1100;
     private String remoteSupplierName = "Novamedia";
 
     private String bindingNameShop;
@@ -94,7 +96,7 @@ public class ShopCommunicator extends UnicastRemoteObject implements IRemoteProp
             publisherSupplier.subscribeRemoteListener(this, "NewProduct");
             publisherSupplier.subscribeRemoteListener(this, "RemovedProduct");
             publisherSupplier.subscribeRemoteListener(this, "ChangedProduct");
-            supplier = (ISupplier) registrySupplier.lookup(remoteSupplierName);
+            suppliers.add((ISupplier) registrySupplier.lookup(remoteSupplierName));
         } catch (RemoteException ex) {
             LOGGER.info("Client: Cannot locate registry");
             LOGGER.info("Client: RemoteException: " + ex.getMessage());
@@ -146,6 +148,25 @@ public class ShopCommunicator extends UnicastRemoteObject implements IRemoteProp
     }
 
     public List<Product> getSupplierProducts() throws RemoteException {
-        return supplier.getProducts();
+        List<Product> allProducts = new ArrayList<>();
+        for (ISupplier supplier : suppliers) {
+            allProducts.addAll(supplier.getProducts());
+        }
+        return allProducts;
+    }
+
+    public void orderProducts(List<ShopProduct> shopProducts) throws RemoteException {
+        for (ISupplier supplier : suppliers) {
+            List<Product> supplierProducts = supplier.getProducts();
+            List<Product> productsToOrder = new ArrayList<>();
+            for (ShopProduct sp : shopProducts ) {
+                for (Product p: supplierProducts   ) {
+                    if(sp.getId() == p.getId()){
+                        productsToOrder.add(p);
+                    }
+                }
+            }
+            supplier.orderProducts(productsToOrder);
+        }
     }
 }
