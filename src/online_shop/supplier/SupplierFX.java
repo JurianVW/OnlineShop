@@ -12,6 +12,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
@@ -20,10 +21,12 @@ import javafx.util.converter.IntegerStringConverter;
 import online_shop.shared.LoginWindow;
 
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class SupplierFX extends Application {
-    private Supplier supplier;
+    public Supplier supplier;
     private static final int port = 1098;
 
     private float sceneWidth = 500;
@@ -41,21 +44,38 @@ public class SupplierFX extends Application {
     }
 
     private void startApplication(Stage primaryStage) {
-        try {
-            supplier = new Supplier(this, port, "Novamedia");
-        } catch (RemoteException e) {
-            e.printStackTrace();
+        List<String> supplierNames = new ArrayList<>();
+        supplierNames.add("Blufans");
+        supplierNames.add("FilmArena");
+        supplierNames.add("Kimchi");
+        supplierNames.add("MantaLab");
+        supplierNames.add("NovaMedia");
+
+        ChoiceDialog<String> dialog = new ChoiceDialog<>(supplierNames.get(0), supplierNames);
+        dialog.setTitle("Supplier");
+        dialog.setHeaderText("Choose a supplier");
+        dialog.setContentText("Supplier name:");
+
+        String supplierName = null;
+        Optional<String> result = dialog.showAndWait();
+        if (result.isPresent()) {
+            supplierName = result.get();
         }
-        LoginWindow loginWindow = new LoginWindow(supplier);
-        loginWindow.loginStage.setOnHidden(event -> {
-            showApplication(primaryStage);
+        if (supplierName != null) {
+            try {
+                supplier = new Supplier(this, port, supplierName);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
 
-        });
-        primaryStage.setOnCloseRequest(e -> exitApplication());
-        loginWindow.loginStage.setOnCloseRequest(e -> exitApplication());
+            observeProducts = FXCollections.observableArrayList();
+            resetList();
 
-        observeProducts = FXCollections.observableArrayList();
-        resetList();
+            LoginWindow loginWindow = new LoginWindow(supplier, supplierName);
+            loginWindow.loginStage.setOnHidden(event -> showApplication(primaryStage));
+            primaryStage.setOnCloseRequest(e -> exitApplication());
+            loginWindow.loginStage.setOnCloseRequest(e -> exitApplication());
+        }
     }
 
     private void showApplication(Stage primaryStage) {
@@ -153,7 +173,6 @@ public class SupplierFX extends Application {
         addButton.setOnAction(e -> {
             supplier.addProduct(new Product(
                     addName.getText(),
-                    1008,
                     Double.valueOf(addPurchasePrice.getText()),
                     Integer.valueOf(addAmount.getText()),
                     Integer.valueOf(addEdition.getText())
@@ -196,6 +215,11 @@ public class SupplierFX extends Application {
         // Create the scene and add the grid pane
         Group root = new Group();
         Scene scene = new Scene(root, sceneWidth, sceneHeight);
+        scene.setOnKeyPressed(event -> {
+            if (event.getText().equals("r")) {
+                resetList();
+            }
+        });
         root.getChildren().add(grid);
         // Define title and assign the scene for main window
         primaryStage.setTitle("Supplier");

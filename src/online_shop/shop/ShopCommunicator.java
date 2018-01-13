@@ -35,7 +35,6 @@ public class ShopCommunicator extends UnicastRemoteObject implements IRemoteProp
 
     private static final int portSupplier = 1098;
     private static final int portShop = 1100;
-    private String remoteSupplierName = "Novamedia";
 
     private String bindingNameShop;
     private String bindingNamePublisherShop;
@@ -76,6 +75,18 @@ public class ShopCommunicator extends UnicastRemoteObject implements IRemoteProp
             LOGGER.severe("Server: RemoteException: " + e.getMessage());
         }
 
+        //If registry exists, try find it
+        if (registryShop == null) {
+            try {
+                registryShop = LocateRegistry.getRegistry(portShop);
+                LOGGER.info("Server: Registry found on port number " + portShop);
+            } catch (RemoteException e) {
+                registryShop = null;
+                LOGGER.severe("Server: Cannot create registry");
+                LOGGER.severe("Server: RemoteException: " + e.getMessage());
+            }
+        }
+
         //Bind using shop registry
         try {
             registryShop.rebind(bindingNameShop, shop);
@@ -88,21 +99,29 @@ public class ShopCommunicator extends UnicastRemoteObject implements IRemoteProp
             LOGGER.severe("Server: Port already in use. \nServer: Please check if the server isn't already running");
             LOGGER.severe("Server: NullPointerException: " + e.getMessage());
         }
+    }
 
+    public void subscribeToSuppliers(List<String> suppliers){
+        for (String s:suppliers) {
+            subscribeToSupplier(s);
+        }
+    }
+
+    public void subscribeToSupplier(String supplierName){
         // Locate supplier registry at IP address and port number
         try {
             registrySupplier = LocateRegistry.getRegistry(localhost.getHostAddress(), portSupplier);
-            publisherSupplier = (IRemotePublisherForListener) registrySupplier.lookup(remoteSupplierName + "Publisher");
+            publisherSupplier = (IRemotePublisherForListener) registrySupplier.lookup(supplierName + "Publisher");
             publisherSupplier.subscribeRemoteListener(this, "NewProduct");
             publisherSupplier.subscribeRemoteListener(this, "RemovedProduct");
             publisherSupplier.subscribeRemoteListener(this, "ChangedProduct");
-            suppliers.add((ISupplier) registrySupplier.lookup(remoteSupplierName));
+            suppliers.add((ISupplier) registrySupplier.lookup(supplierName));
         } catch (RemoteException ex) {
             LOGGER.info("Client: Cannot locate registry");
             LOGGER.info("Client: RemoteException: " + ex.getMessage());
             registrySupplier = null;
         } catch (NotBoundException ex) {
-            LOGGER.info("Client: Cannot locate " + remoteSupplierName + "Publisher");
+            LOGGER.info("Client: Cannot locate " + supplierName + "Publisher");
             LOGGER.info("Client: NotBoundException: " + ex.getMessage());
             registrySupplier = null;
         }
@@ -131,9 +150,9 @@ public class ShopCommunicator extends UnicastRemoteObject implements IRemoteProp
         }
     }
 
-    public void informRemovedShopProduct(ShopProduct shopProduct) {
+    public void informRemovedShopProduct(Integer productId) {
         try {
-            publisherShop.inform("RemovedShopProduct", null, shopProduct);
+            publisherShop.inform("RemovedShopProduct", null, productId);
         } catch (RemoteException e) {
             e.printStackTrace();
         }

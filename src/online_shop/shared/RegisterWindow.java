@@ -54,39 +54,17 @@ public class RegisterWindow {
         PasswordField pwBox = new PasswordField();
         grid.add(pwBox, 1, 3);
 
-        Label lblStreet = new Label("Streetname:");
-        grid.add(lblStreet, 0, 4);
-        TextField streetTextField = new TextField();
-        grid.add(streetTextField, 1, 4);
-
-        Label lblHouseNumber = new Label("House number:");
-        grid.add(lblHouseNumber, 0, 5);
-        TextField numberTextField = new TextField();
-        grid.add(numberTextField, 1, 5);
-
-        Label lblPostalCode = new Label("Postal Code:");
-        grid.add(lblPostalCode, 0, 6);
-        TextField postalCodeTextField = new TextField();
-        grid.add(postalCodeTextField, 1, 6);
-
-        Label lblPlace = new Label("Place:");
-        grid.add(lblPlace, 0, 7);
-        TextField placeTextField = new TextField();
-        grid.add(placeTextField, 1, 7);
-
         Button btnRegister = new Button("Register");
         HBox hbBtnRegister = new HBox(10);
         hbBtnRegister.setAlignment(Pos.BOTTOM_RIGHT);
         hbBtnRegister.getChildren().add(btnRegister);
-        grid.add(hbBtnRegister, 1, 8);
+        grid.add(hbBtnRegister, 1, 4);
 
         final Text errorMessage = new Text();
         grid.add(errorMessage, 0, 4, 2, 1);
 
-
         btnRegister.setOnAction(e -> {
-            String message = client.register(nameTextField.getText(), emailTextField.getText(), pwBox.getText(), streetTextField.getText(), numberTextField.getText(), postalCodeTextField.getText(), placeTextField.getText());
-            if (message == null) {
+            if (client.register(nameTextField.getText(), emailTextField.getText(), pwBox.getText())) {
                 registerStage.close();
             }
             errorMessage.setText("Registering failed failed");
@@ -98,7 +76,7 @@ public class RegisterWindow {
             errorMessage.setText("");
         });
 
-        Scene scene = new Scene(grid, 300, 325);
+        Scene scene = new Scene(grid, 300, 200);
         registerStage.setScene(scene);
         registerStage.setResizable(false);
         registerStage.show();

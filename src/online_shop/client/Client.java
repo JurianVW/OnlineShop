@@ -1,5 +1,6 @@
 package online_shop.client;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import online_shop.shared.Account;
 import online_shop.shared.IShopProduct;
 import online_shop.shop.ShopProduct;
@@ -19,9 +20,9 @@ public class Client {
     private String session;
     private Account account;
 
-    public Client(ClientFX clientFX) throws RemoteException {
+    public Client(ClientFX clientFX, String shopName) throws RemoteException {
         this.clientFX = clientFX;
-        clientCommunicator = new ClientCommunicator(this);
+        clientCommunicator = new ClientCommunicator(this, shopName);
     }
 
     public Account logIn(String username, String password) {
@@ -35,9 +36,10 @@ public class Client {
         return null;
     }
 
-    public String register(String name, String email, String password, String streetname, String houseNumber, String postalCode, String place) {
+    public Boolean register(String name, String email, String password) {
         try {
-            return clientCommunicator.register(name, email, password, streetname, houseNumber, postalCode, place);
+            this.session = "hashhereplz";
+            return clientCommunicator.register(name, email, password);
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -65,8 +67,8 @@ public class Client {
         clientFX.changedShopProduct(shopProduct);
     }
 
-    public void removedShopProduct(ShopProduct shopProduct) {
-        clientFX.removedShopProduct(shopProduct);
+    public void removedShopProduct(Integer productId) {
+        clientFX.removedShopProduct(productId);
     }
 
     public void newShopProduct(ShopProduct shopProduct) {

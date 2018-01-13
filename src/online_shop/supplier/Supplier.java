@@ -33,7 +33,7 @@ public class Supplier extends UnicastRemoteObject implements ISupplier {
 
     public Supplier(SupplierFX suppliefFX, int port, String supplierName) throws RemoteException {
         this.suppliefFX = suppliefFX;
-        database = new DatabaseSupplier();
+        database = new DatabaseSupplier(supplierName);
         publisher = new RemotePublisher();
         bindingName = supplierName;
         bindingNamePublisher = supplierName + "Publisher";
@@ -54,10 +54,22 @@ public class Supplier extends UnicastRemoteObject implements ISupplier {
             registry = LocateRegistry.createRegistry(port);
             LOGGER.info("Server: Registry created on port number " + port);
         } catch (RemoteException e) {
+            registry = null;
             LOGGER.severe("Server: Cannot create registry");
             LOGGER.severe("Server: RemoteException: " + e.getMessage());
         }
 
+        //If registry exists, try find it
+        if (registry == null) {
+            try {
+                registry = LocateRegistry.getRegistry(port);
+                LOGGER.info("Server: Registry found on port number " + port);
+            } catch (RemoteException e) {
+                registry = null;
+                LOGGER.severe("Server: Cannot create registry");
+                LOGGER.severe("Server: RemoteException: " + e.getMessage());
+            }
+        }
         //Bind using registry
         try {
             registry.rebind(bindingName, this);
@@ -105,7 +117,7 @@ public class Supplier extends UnicastRemoteObject implements ISupplier {
         //TODO: better code
     }
 
-    public void orderProducts(List<Product> products){
+    public void orderProducts(List<Product> products) {
         suppliefFX.orderProducts(products);
     }
 

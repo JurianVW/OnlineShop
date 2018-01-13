@@ -1,5 +1,6 @@
 package online_shop.Tests;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class ClientTest {

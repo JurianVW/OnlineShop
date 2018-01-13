@@ -3,6 +3,7 @@ package online_shop.shop;
 import online_shop.shared.Account;
 import online_shop.shared.AccountType;
 import online_shop.shared.IShop;
+import online_shop.shared.IShopFX;
 import online_shop.supplier.Product;
 
 import java.rmi.RemoteException;
@@ -11,7 +12,7 @@ import java.util.Hashtable;
 import java.util.List;
 
 public class Shop extends UnicastRemoteObject implements IShop {
-    private ShopFX shopFX;
+    private IShopFX shopFX;
 
     private ShopCommunicator shopCommunicator;
 
@@ -20,10 +21,11 @@ public class Shop extends UnicastRemoteObject implements IShop {
 
     private DatabaseShop database;
 
-    public Shop(ShopFX shopFX, String shopName) throws RemoteException {
+    public Shop(IShopFX shopFX, String shopName) throws RemoteException {
         this.shopFX = shopFX;
-        database = new DatabaseShop();
+        database = new DatabaseShop(shopName);
         shopCommunicator = new ShopCommunicator(this, shopName);
+        shopCommunicator.subscribeToSuppliers(database.getShopSuppliers());
         updateSupplierProducts(shopCommunicator.getSupplierProducts());
         accountSessions = new Hashtable<>();
     }
@@ -49,23 +51,22 @@ public class Shop extends UnicastRemoteObject implements IShop {
     }
 
     public void productChanged(Product product) {
-        database.updateProduct(product);
         shopCommunicator.informChangedShopProduct(database.getShopProduct(product));
         updateFX();
     }
 
     public void productRemoved(Product product) {
+        shopCommunicator.informRemovedShopProduct(product.getId());
         database.removeSupplierProduct(product);
-        shopCommunicator.informRemovedShopProduct(database.getShopProduct(product));
+
         updateFX();
     }
 
     public void orderProducts(List<ShopProduct> shopProducts, Integer accountId, String session) {
-        if(accountSessions.get(session).equals(accountId)){
+        if (accountSessions.get(session).equals(accountId)) {
             try {
                 shopCommunicator.orderProducts(shopProducts);
-            }
-            catch (RemoteException e){
+            } catch (RemoteException e) {
                 e.printStackTrace();
             }
         }
@@ -74,10 +75,11 @@ public class Shop extends UnicastRemoteObject implements IShop {
     public Account logIn(String username, String password, String session) {
         Account a = database.logIn(username, password);
         if (a != null) {
-          if (a.getAccountType() == AccountType.CUSTOMER) {
+            if (a.getAccountType() == AccountType.CUSTOMER) {
                 accountSessions.put(session, a.getId());
+                return a;
             }
-            return a;
+
         }
         return null;
     }
@@ -94,11 +96,11 @@ public class Shop extends UnicastRemoteObject implements IShop {
     }
 
     public void logOut(String session) {
-        throw new UnsupportedOperationException();
+        accountSessions.remove(session);
     }
 
-    public String register(String name, String email, String password, String streetname, String houseNumber, String postalCode, String place) {
-        throw new UnsupportedOperationException();
+    public Boolean register(String name, String email, String password) {
+        return database.register(name, email, password);
     }
 
     private void updateFX() {

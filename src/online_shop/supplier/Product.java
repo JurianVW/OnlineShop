@@ -9,9 +9,15 @@ public class Product implements IProduct {
     private Integer amount;
     private Integer edition;
 
-    public Product(String name, Integer id, Double purchasePrice, Integer amount, Integer edition) {
+    public Product(String name, Double purchasePrice, Integer amount, Integer edition) {
         this.name = name;
+        this.purchasePrice = purchasePrice;
+        this.amount = amount;
+        this.edition = edition;
+    }
+    public Product(Integer id, String name, Double purchasePrice, Integer amount, Integer edition) {
         this.id = id;
+        this.name = name;
         this.purchasePrice = purchasePrice;
         this.amount = amount;
         this.edition = edition;
@@ -31,6 +37,10 @@ public class Product implements IProduct {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void setId(int id){
+        this.id = id;
     }
 
     public int getId() {

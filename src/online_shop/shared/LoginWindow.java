@@ -28,24 +28,28 @@ public class LoginWindow {
     private AccountType loginType;
 
     private String welcomeMessage = "Login";
+    private String title;
 
-    public LoginWindow(Client client) {
+    public LoginWindow(Client client, String shopName) {
         loginType = AccountType.CUSTOMER;
         this.client = client;
+        title = shopName;
         createStage();
     }
 
-    public LoginWindow(Shop shop) {
+    public LoginWindow(Shop shop, String shopName) {
         loginType = AccountType.SHOPEMPLOYEE;
         welcomeMessage = "Shop Login";
         this.shop = shop;
+        title = shopName;
         createStage();
     }
 
-    public LoginWindow(Supplier supplier) {
+    public LoginWindow(Supplier supplier, String supplierName) {
         loginType = AccountType.SUPPLIEREMPLOYEE;
         welcomeMessage = "Supplier Login";
         this.supplier = supplier;
+        title = supplierName;
         createStage();
     }
 
@@ -145,6 +149,7 @@ public class LoginWindow {
         });
 
         Scene scene = new Scene(grid, 300, 200);
+        loginStage.setTitle(title);
         loginStage.setScene(scene);
         loginStage.setResizable(false);
         loginStage.show();

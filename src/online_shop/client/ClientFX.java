@@ -25,6 +25,7 @@ import online_shop.supplier.Product;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class ClientFX extends Application {
     private Client client;
@@ -43,17 +44,33 @@ public class ClientFX extends Application {
     }
 
     private void startApplication(Stage primaryStage) {
-        try {
-            client = new Client(this);
-        } catch (RemoteException e) {
-            e.printStackTrace();
+        List<String> shopNames = new ArrayList<>();
+        shopNames.add("Bol.com");
+        shopNames.add("Mediamarkt");
+        shopNames.add("Zavvi");
+
+        ChoiceDialog<String> dialog = new ChoiceDialog<>(shopNames.get(0), shopNames);
+        dialog.setTitle("Client shop");
+        dialog.setHeaderText("Choose a shop");
+        dialog.setContentText("Shop name:");
+
+        String shopName = null;
+        Optional<String> result = dialog.showAndWait();
+        if (result.isPresent()) {
+            shopName = result.get();
         }
-        LoginWindow loginWindow = new LoginWindow(client);
-        loginWindow.loginStage.setOnHidden(event -> {
-            showApplication(primaryStage);
-        });
-        primaryStage.setOnCloseRequest(e -> exitApplication());
-        loginWindow.loginStage.setOnCloseRequest(e -> exitApplication());
+
+        if (shopName != null) {
+            try {
+                client = new Client(this, shopName);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+            LoginWindow loginWindow = new LoginWindow(client, shopName);
+            loginWindow.loginStage.setOnHidden(event -> showApplication(primaryStage));
+            primaryStage.setOnCloseRequest(e -> exitApplication());
+            loginWindow.loginStage.setOnCloseRequest(e -> exitApplication());
+        }
     }
 
     private void showApplication(Stage primaryStage) {
@@ -169,18 +186,31 @@ public class ClientFX extends Application {
         Button btnOrderProducts = new Button("Order products");
         btnOrderProducts.setOnAction(e -> {
             List<ShopProduct> productsToOrder = new ArrayList<>();
+            boolean failed = false;
             for (CartProductTable cbt : cartProducts) {
+                if (cbt.getCartAmount() > cbt.getShopProduct().getAmount()) {
+                    failed = true;
+                    break;
+                }
                 for (int i = 0; i < cbt.getCartAmount(); i++) {
                     productsToOrder.add(cbt.getShopProduct());
                 }
             }
-          client.orderProducts(productsToOrder);
-            cartProducts.clear();
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Information");
-            alert.setHeaderText(null);
-            alert.setContentText("Order placed!");
-            alert.showAndWait();
+            if (failed) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText(null);
+                alert.setContentText("Please check available amount for each product in cart!");
+                alert.showAndWait();
+            } else {
+                client.orderProducts(productsToOrder);
+                cartProducts.clear();
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Information");
+                alert.setHeaderText(null);
+                alert.setContentText("Order placed!");
+                alert.showAndWait();
+            }
         });
         hbCartButtons.getChildren().add(btnRemoveFromCart);
         hbCartButtons.getChildren().add(btnOrderProducts);
@@ -200,6 +230,11 @@ public class ClientFX extends Application {
         // Create the scene and add the grid pane
         Group root = new Group();
         Scene scene = new Scene(root, sceneWidth, sceneHeight);
+        scene.setOnKeyPressed(event -> {
+            if (event.getText().equals("r")) {
+                update();
+            }
+        });
         root.getChildren().add(grid);
         // Define title and assign the scene for main window
         primaryStage.setTitle("Client");
@@ -224,27 +259,51 @@ public class ClientFX extends Application {
 
     public synchronized void changedShopProduct(ShopProduct shopProduct) {
         Integer index = Integer.MAX_VALUE;
-        for (ShopProduct sp:observeProducts            ) {
-            if(sp.getId() == shopProduct.getId()){
+        for (ShopProduct sp : observeProducts) {
+            if (sp.getId() == shopProduct.getId()) {
                 index = observeProducts.indexOf(sp);
+                break;
             }
         }
-        if(index < observeProducts.size()){
-            //observeProducts.remove(observeProducts.get(index));
-            //observeProducts.add(shopProduct);
+        if (index < observeProducts.size()) {
             observeProducts.set(index, shopProduct);
+        }
+
+        index = Integer.MAX_VALUE;
+        for (CartProductTable cbt : cartProducts) {
+            if (cbt.getShopProduct().getId() == shopProduct.getId()) {
+                index = cartProducts.indexOf(cbt);
+                break;
+            }
+        }
+        if (index < cartProducts.size()) {
+            CartProductTable cbt = cartProducts.get(index);
+            cbt.updateShopProduct(shopProduct);
+            cartProducts.set(index, cbt);
         }
     }
 
-    public void removedShopProduct(ShopProduct shopProduct) {
+    public void removedShopProduct(Integer productId) {
         Integer index = Integer.MAX_VALUE;
-        for (ShopProduct sp:observeProducts            ) {
-            if(sp.getId() == shopProduct.getId()){
+        for (ShopProduct sp : observeProducts) {
+            if (sp.getId() == productId) {
                 index = observeProducts.indexOf(sp);
+                break;
             }
         }
-        if(index < observeProducts.size()){
-            observeProducts.remove(index);
+        if (index < observeProducts.size()) {
+            observeProducts.remove(observeProducts.get(index));
+        }
+
+        index = Integer.MAX_VALUE;
+        for (CartProductTable cbt : cartProducts) {
+            if (cbt.getShopProduct().getId() == productId) {
+                index = cartProducts.indexOf(cbt);
+                break;
+            }
+        }
+        if (index < cartProducts.size()) {
+            cartProducts.remove(cartProducts.get(index));
         }
     }
 

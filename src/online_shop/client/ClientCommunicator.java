@@ -31,8 +31,9 @@ public class ClientCommunicator extends UnicastRemoteObject implements IRemotePr
 
     private InetAddress localhost;
 
-    protected ClientCommunicator(Client client) throws RemoteException {
+    protected ClientCommunicator(Client client, String shopName) throws RemoteException {
         this.client = client;
+        this.remoteShopName = shopName;
 
         try {
             localhost = InetAddress.getLocalHost();
@@ -70,7 +71,7 @@ public class ClientCommunicator extends UnicastRemoteObject implements IRemotePr
                 client.newShopProduct((ShopProduct) propertyChangeEvent.getNewValue());
                 break;
             case "RemovedShopProduct":
-                client.removedShopProduct((ShopProduct) propertyChangeEvent.getNewValue());
+                client.removedShopProduct((Integer) propertyChangeEvent.getNewValue());
                 break;
         }
     }
@@ -83,8 +84,8 @@ public class ClientCommunicator extends UnicastRemoteObject implements IRemotePr
         return shop.logIn(username, password, session);
     }
 
-    public String register(String name, String email, String password, String streetname, String houseNumber, String postalCode, String place) throws RemoteException {
-        return shop.register(name, email, password, streetname, houseNumber, postalCode, place);
+    public Boolean register(String name, String email, String password) throws RemoteException {
+        return shop.register(name, email, password);
     }
 
     public void orderProducts(List<ShopProduct> shopProducts, Integer accountId, String session) throws RemoteException {

@@ -39,11 +39,7 @@ public interface IShop extends Remote {
      *
      * @param name
      * @param email
-     * @param streetname
-     * @param houseNumber
-     * @param postalCode
-     * @param place
      * @return the account that is made with the given info
      */
-    String register(String name, String email, String password, String streetname, String houseNumber, String postalCode, String place)throws RemoteException;
+    Boolean register(String name, String email, String password)throws RemoteException;
 }

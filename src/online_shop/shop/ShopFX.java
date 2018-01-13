@@ -16,13 +16,18 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.util.converter.DoubleStringConverter;
+import online_shop.shared.IShop;
+import online_shop.shared.IShopFX;
 import online_shop.shared.LoginWindow;
 import online_shop.supplier.Product;
 
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
-public class ShopFX extends Application {
-    private Shop shop;
+public class ShopFX extends Application implements IShopFX {
+    public Shop shop;
 
     private float sceneWidth = 700;
     private float sceneHeight = 500;
@@ -39,18 +44,37 @@ public class ShopFX extends Application {
     }
 
     private void startApplication(Stage primaryStage) {
-        try {
-            shop = new Shop(this, "Bol.com");
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-        LoginWindow loginWindow = new LoginWindow(shop);
-        loginWindow.loginStage.setOnHidden(event -> {
-            showApplication(primaryStage);
+        List<String> shopNames = new ArrayList<>();
+        shopNames.add("Bol.com");
+        shopNames.add("Mediamarkt");
+        shopNames.add("Zavvi");
 
-        });
-        primaryStage.setOnCloseRequest(e -> exitApplication());
-        loginWindow.loginStage.setOnCloseRequest(e -> exitApplication());
+        ChoiceDialog<String> dialog = new ChoiceDialog<>(shopNames.get(0), shopNames);
+        dialog.setTitle("Shop");
+        dialog.setHeaderText("Choose a shop");
+        dialog.setContentText("Shop name:");
+
+        String shopName = null;
+        Optional<String> result = dialog.showAndWait();
+        if (result.isPresent()) {
+            shopName = result.get();
+        }
+
+        if (shopName != null) {
+            try {
+                shop = new Shop(this, shopName);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+
+            observeProducts = FXCollections.observableArrayList();
+            update();
+
+            LoginWindow loginWindow = new LoginWindow(shop, shopName);
+            loginWindow.loginStage.setOnHidden(event -> showApplication(primaryStage));
+            primaryStage.setOnCloseRequest(e -> exitApplication());
+            loginWindow.loginStage.setOnCloseRequest(e -> exitApplication());
+        }
     }
 
     private void showApplication(Stage primaryStage) {
@@ -61,9 +85,6 @@ public class ShopFX extends Application {
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setPadding(new Insets(25, 25, 25, 25));
-
-        observeProducts = FXCollections.observableArrayList();
-        update();
 
         TableView table = new TableView();
         table.setEditable(true);
@@ -133,6 +154,11 @@ public class ShopFX extends Application {
         // Create the scene and add the grid pane
         Group root = new Group();
         Scene scene = new Scene(root, sceneWidth, sceneHeight);
+        scene.setOnKeyPressed(event -> {
+            if (event.getText().equals("r")) {
+                update();
+            }
+        });
         root.getChildren().add(grid);
         // Define title and assign the scene for main window
         primaryStage.setTitle("Shop");
@@ -150,7 +176,7 @@ public class ShopFX extends Application {
         startApplication(primaryStage);
     }
 
-       public synchronized void update() {
+    public synchronized void update() {
         observeProducts.clear();
         for (ShopProduct p : shop.getShopProducts()) {
             observeProducts.add(new ShopProductTable(p));
