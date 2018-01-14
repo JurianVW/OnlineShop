@@ -33,6 +33,9 @@ public class ShopFX extends Application implements IShopFX {
     private float sceneHeight = 500;
 
     ObservableList<ShopProductTable> observeProducts;
+    List<String> supplierNames;
+
+    private String shopName = "";
 
     public static void main(String args[]) {
         launch(args);
@@ -44,6 +47,13 @@ public class ShopFX extends Application implements IShopFX {
     }
 
     private void startApplication(Stage primaryStage) {
+        supplierNames = new ArrayList<>();
+        supplierNames.add("Blufans");
+        supplierNames.add("FilmArena");
+        supplierNames.add("Kimchi");
+        supplierNames.add("MantaLab");
+        supplierNames.add("NovaMedia");
+
         List<String> shopNames = new ArrayList<>();
         shopNames.add("Bol.com");
         shopNames.add("Mediamarkt");
@@ -66,6 +76,7 @@ public class ShopFX extends Application implements IShopFX {
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
+            this.shopName = shopName;
 
             observeProducts = FXCollections.observableArrayList();
             update();
@@ -143,6 +154,53 @@ public class ShopFX extends Application implements IShopFX {
         HBox hbBtns = new HBox(10);
         hbBtns.setAlignment(Pos.CENTER);
 
+        Button btnAddSupplier = new Button("Add Supplier");
+        btnAddSupplier.setOnAction(e -> {
+            List<String> currentSuppliers = shop.getShopSuppliers();
+            List<String> newSuppliers = new ArrayList<>();
+            for (String s : supplierNames) {
+                if (!currentSuppliers.contains(s)) {
+                    newSuppliers.add(s);
+                }
+            }
+
+            ChoiceDialog<String> dialog = new ChoiceDialog<>(newSuppliers.get(0), newSuppliers);
+            dialog.setTitle("Add Supplier");
+            dialog.setHeaderText("Choose a supplier");
+            dialog.setContentText("Supplier name:");
+
+            String supplierName = null;
+            Optional<String> result = dialog.showAndWait();
+            if (result.isPresent()) {
+                supplierName = result.get();
+            }
+
+            if (supplierName != null) {
+                shop.addShopSupplier(supplierName);
+            }
+        });
+        hbBtns.getChildren().add(btnAddSupplier);
+
+        Button btnRemoveSupplier = new Button("Remove Supplier");
+        btnRemoveSupplier.setOnAction(e -> {
+            List<String> currentSuppliers = shop.getShopSuppliers();
+            ChoiceDialog<String> dialog = new ChoiceDialog<>(currentSuppliers.get(0), currentSuppliers);
+            dialog.setTitle("Remove Supplier");
+            dialog.setHeaderText("Choose a supplier");
+            dialog.setContentText("Supplier name:");
+
+            String supplierName = null;
+            Optional<String> result = dialog.showAndWait();
+            if (result.isPresent()) {
+                supplierName = result.get();
+            }
+
+            if (supplierName != null) {
+                shop.removeShopSupplier(supplierName);
+            }
+        });
+        hbBtns.getChildren().add(btnRemoveSupplier);
+
         Button btnLogout = new Button("Log out");
         btnLogout.setOnAction(e -> {
             primaryStage.close();
@@ -158,10 +216,13 @@ public class ShopFX extends Application implements IShopFX {
             if (event.getText().equals("r")) {
                 update();
             }
+            else if(event.getText().equals("c")){
+                shop.reconnectToSuppliers();
+            }
         });
         root.getChildren().add(grid);
         // Define title and assign the scene for main window
-        primaryStage.setTitle("Shop");
+        primaryStage.setTitle("Shop: " + shopName);
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
         primaryStage.show();

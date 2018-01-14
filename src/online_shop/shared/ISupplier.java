@@ -8,10 +8,9 @@ import java.util.List;
 
 public interface ISupplier extends Remote {
     /**
-     *
      * @return the list of all products of that supplier
      */
     List<Product> getProducts() throws RemoteException;
 
-    void orderProducts(List<Product> products) throws RemoteException;
+    Boolean orderProducts(List<Product> products) throws RemoteException;
 }

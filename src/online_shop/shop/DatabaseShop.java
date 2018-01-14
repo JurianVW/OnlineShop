@@ -3,6 +3,7 @@ package online_shop.shop;
 import online_shop.shared.Account;
 import online_shop.shared.AccountType;
 import online_shop.shared.DatabaseConnection;
+import online_shop.shared.MD5Digest;
 import online_shop.supplier.DatabaseSupplier;
 import online_shop.supplier.Product;
 
@@ -17,50 +18,59 @@ public class DatabaseShop {
 
     private String shopName;
 
+    private MD5Digest md5Digest = new MD5Digest();
+
     public DatabaseShop(String shopName) {
         this.shopName = shopName;
     }
 
-    public Account logIn(String username, String password) {
+    public Account logIn(String username, String password, Boolean shop) {
         Account account = null;
-        dbConn.setConnection();
-        try (PreparedStatement myStmt = dbConn.conn.prepareStatement("SELECT * FROM [Account] WHERE [Email] = ? AND [Password] = ?")) {
-            myStmt.setString(1, username);
-            myStmt.setString(2, password);
-            try (ResultSet myRs = myStmt.executeQuery()) {
-                while (myRs.next()) {
-                    account = new Account(
-                            myRs.getInt("ID"),
-                            AccountType.valueOf(myRs.getString("AccountType")),
-                            myRs.getString("Name"),
-                            myRs.getString("Email"));
+        String digestedPassword = md5Digest.digest(password);
+        if (digestedPassword != null) {
+            dbConn.setConnection();
+            try (PreparedStatement myStmt = dbConn.conn.prepareStatement("SELECT * FROM [Account] WHERE [Email] = ? AND [Password] = ? AND [AccountType] = ? ")) {
+                myStmt.setString(1, username);
+                myStmt.setString(2, digestedPassword);
+                if (shop) myStmt.setString(3, AccountType.SHOPEMPLOYEE.toString());
+                else myStmt.setString(3, AccountType.CUSTOMER.toString());
+                try (ResultSet myRs = myStmt.executeQuery()) {
+                    while (myRs.next()) {
+                        account = new Account(
+                                myRs.getInt("ID"),
+                                AccountType.valueOf(myRs.getString("AccountType")),
+                                myRs.getString("Name"),
+                                myRs.getString("Email"));
+                    }
                 }
+            } catch (SQLException ex) {
+                LOGGER.info(ex.getMessage());
+            } finally {
+                dbConn.closeConnection();
             }
-            Boolean justSoItWontSeeAsDuplicate; //This is here just so it wont see as duplicate which is annoying
-        } catch (SQLException ex) {
-            LOGGER.info(ex.getMessage());
-        } finally {
-            dbConn.closeConnection();
         }
         return account;
     }
 
     public Boolean register(String name, String email, String password) {
         Integer id = getNextAccountID();
-        dbConn.setConnection();
-        try (PreparedStatement myStmt = dbConn.conn.prepareStatement("INSERT INTO Account ([ID], [AccountType], [Name], [Email], [Password]) VALUES (?,?,?,?,?)")) {
-            myStmt.setInt(1, id);
-            myStmt.setString(2, AccountType.CUSTOMER.toString());
-            myStmt.setString(3, name);
-            myStmt.setString(4, email);
-            myStmt.setString(5, password);
-            myStmt.executeUpdate();
-        } catch (SQLException ex) {
-            LOGGER.info(ex.getMessage());
-        } finally {
-            dbConn.closeConnection();
+        String digestedPassword = md5Digest.digest(password);
+        if (digestedPassword != null) {
+            dbConn.setConnection();
+            try (PreparedStatement myStmt = dbConn.conn.prepareStatement("INSERT INTO Account ([ID], [AccountType], [Name], [Email], [Password]) VALUES (?,?,?,?,?)")) {
+                myStmt.setInt(1, id);
+                myStmt.setString(2, AccountType.CUSTOMER.toString());
+                myStmt.setString(3, name);
+                myStmt.setString(4, email);
+                myStmt.setString(5, digestedPassword);
+                myStmt.executeUpdate();
+            } catch (SQLException ex) {
+                LOGGER.info(ex.getMessage());
+            } finally {
+                dbConn.closeConnection();
+            }
         }
-        return logIn(email, password) != null;
+        return logIn(email, password, false) != null;
     }
 
     public void addShopProduct(ShopProduct product) {
@@ -159,6 +169,54 @@ public class DatabaseShop {
             dbConn.closeConnection();
         }
         return shopProduct;
+    }
+
+    public List<Product> getSupplierProducts(String supplierName) {
+        List<Product> products = new ArrayList<>();
+        dbConn.setConnection();
+        try (PreparedStatement myStmt = dbConn.conn.prepareStatement("SELECT * FROM [Product] WHERE [SupplierName] = ? ORDER BY [Product].[ProductName]")) {
+            myStmt.setString(1, supplierName);
+            try (ResultSet myRs = myStmt.executeQuery()) {
+                while (myRs.next()) {
+                    products.add(new Product(myRs.getInt("ProductNumber"),
+                            myRs.getString("ProductName"),
+                            myRs.getDouble("PurchaseCost"),
+                            myRs.getInt("Amount"),
+                            myRs.getInt("Edition")));
+                }
+            }
+        } catch (SQLException ex) {
+            LOGGER.info(ex.getMessage());
+        } finally {
+            dbConn.closeConnection();
+        }
+        return products;
+    }
+
+    public void addShopSupplier(String supplierName) {
+        dbConn.setConnection();
+        try (PreparedStatement myStmt = dbConn.conn.prepareStatement("INSERT INTO [ShopSuppliers] (ShopName, SupplierName) VALUES (?,?)")) {
+            myStmt.setString(1, shopName);
+            myStmt.setString(2, supplierName);
+            myStmt.executeUpdate();
+        } catch (SQLException ex) {
+            LOGGER.info(ex.getMessage());
+        } finally {
+            dbConn.closeConnection();
+        }
+    }
+
+    public void removeShopSupplier(String supplierName) {
+        dbConn.setConnection();
+        try (PreparedStatement myStmt = dbConn.conn.prepareStatement("DELETE FROM [ShopSuppliers] WHERE [ShopName] = ? AND [SupplierName] = ?")) {
+            myStmt.setString(1, shopName);
+            myStmt.setString(2, supplierName);
+            myStmt.executeUpdate();
+        } catch (SQLException ex) {
+            LOGGER.info(ex.getMessage());
+        } finally {
+            dbConn.closeConnection();
+        }
     }
 
     public List<String> getShopSuppliers() {

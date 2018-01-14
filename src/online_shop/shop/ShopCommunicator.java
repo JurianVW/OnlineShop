@@ -1,5 +1,6 @@
 package online_shop.shop;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import fontyspublisher.IRemotePropertyListener;
 import fontyspublisher.IRemotePublisherForListener;
 import fontyspublisher.RemotePublisher;
@@ -26,11 +27,9 @@ public class ShopCommunicator extends UnicastRemoteObject implements IRemoteProp
     private static final Logger LOGGER = Logger.getLogger(Supplier.class.getName());
     private Shop shop;
 
-    private Registry registrySupplier = null;
     private Registry registryShop = null;
 
     private RemotePublisher publisherShop;
-    private IRemotePublisherForListener publisherSupplier;
     private List<ISupplier> suppliers = new ArrayList<>();
 
     private static final int portSupplier = 1098;
@@ -101,13 +100,16 @@ public class ShopCommunicator extends UnicastRemoteObject implements IRemoteProp
         }
     }
 
-    public void subscribeToSuppliers(List<String> suppliers){
-        for (String s:suppliers) {
+    public void subscribeToSuppliers(List<String> suppliers) {
+        for (String s : suppliers) {
             subscribeToSupplier(s);
         }
     }
 
-    public void subscribeToSupplier(String supplierName){
+    public void subscribeToSupplier(String supplierName) {
+        Registry registrySupplier = null;
+        IRemotePublisherForListener publisherSupplier;
+
         // Locate supplier registry at IP address and port number
         try {
             registrySupplier = LocateRegistry.getRegistry(localhost.getHostAddress(), portSupplier);
@@ -119,11 +121,30 @@ public class ShopCommunicator extends UnicastRemoteObject implements IRemoteProp
         } catch (RemoteException ex) {
             LOGGER.info("Client: Cannot locate registry");
             LOGGER.info("Client: RemoteException: " + ex.getMessage());
-            registrySupplier = null;
         } catch (NotBoundException ex) {
             LOGGER.info("Client: Cannot locate " + supplierName + "Publisher");
             LOGGER.info("Client: NotBoundException: " + ex.getMessage());
-            registrySupplier = null;
+        }
+    }
+
+    public void unsubscribeFromSupplier(String supplierName) {
+        Registry registrySupplier = null;
+        IRemotePublisherForListener publisherSupplier;
+
+        // Locate supplier registry at IP address and port number
+        try {
+            registrySupplier = LocateRegistry.getRegistry(localhost.getHostAddress(), portSupplier);
+            publisherSupplier = (IRemotePublisherForListener) registrySupplier.lookup(supplierName + "Publisher");
+            publisherSupplier.unsubscribeRemoteListener(this, "NewProduct");
+            publisherSupplier.unsubscribeRemoteListener(this, "RemovedProduct");
+            publisherSupplier.unsubscribeRemoteListener(this, "ChangedProduct");
+            suppliers.remove((ISupplier) registrySupplier.lookup(supplierName));
+        } catch (RemoteException ex) {
+            LOGGER.info("Client: Cannot locate registry");
+            LOGGER.info("Client: RemoteException: " + ex.getMessage());
+        } catch (NotBoundException ex) {
+            LOGGER.info("Client: Cannot locate " + supplierName + "Publisher");
+            LOGGER.info("Client: NotBoundException: " + ex.getMessage());
         }
     }
 
@@ -174,18 +195,19 @@ public class ShopCommunicator extends UnicastRemoteObject implements IRemoteProp
         return allProducts;
     }
 
-    public void orderProducts(List<ShopProduct> shopProducts) throws RemoteException {
+    public Boolean orderProducts(List<ShopProduct> shopProducts) throws RemoteException {
         for (ISupplier supplier : suppliers) {
             List<Product> supplierProducts = supplier.getProducts();
             List<Product> productsToOrder = new ArrayList<>();
-            for (ShopProduct sp : shopProducts ) {
-                for (Product p: supplierProducts   ) {
-                    if(sp.getId() == p.getId()){
+            for (ShopProduct sp : shopProducts) {
+                for (Product p : supplierProducts) {
+                    if (sp.getId() == p.getId()) {
                         productsToOrder.add(p);
                     }
                 }
             }
-            supplier.orderProducts(productsToOrder);
+            return supplier.orderProducts(productsToOrder);
         }
+        return false;
     }
 }

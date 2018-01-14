@@ -3,6 +3,7 @@ package online_shop.client;
 import com.sun.org.apache.xpath.internal.operations.Bool;
 import online_shop.shared.Account;
 import online_shop.shared.IShopProduct;
+import online_shop.shared.MD5Digest;
 import online_shop.shop.ShopProduct;
 
 import java.rmi.RemoteException;
@@ -15,10 +16,9 @@ public class Client {
 
     private ClientCommunicator clientCommunicator;
 
-    private List<ShopProduct> cart;
-
     private String session;
     private Account account;
+    private MD5Digest md5Digest = new MD5Digest();
 
     public Client(ClientFX clientFX, String shopName) throws RemoteException {
         this.clientFX = clientFX;
@@ -27,7 +27,7 @@ public class Client {
 
     public Account logIn(String username, String password) {
         try {
-            this.session = "hashhereplz";
+            this.session = md5Digest.digest(username);
             this.account = clientCommunicator.logIn(username, password, session);
             return account;
         } catch (RemoteException e) {
@@ -36,9 +36,16 @@ public class Client {
         return null;
     }
 
+    public void logOut() {
+        try {
+            clientCommunicator.logOut(session);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
     public Boolean register(String name, String email, String password) {
         try {
-            this.session = "hashhereplz";
             return clientCommunicator.register(name, email, password);
         } catch (RemoteException e) {
             e.printStackTrace();

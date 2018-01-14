@@ -3,6 +3,7 @@ package online_shop.supplier;
 import online_shop.shared.Account;
 import online_shop.shared.AccountType;
 import online_shop.shared.DatabaseConnection;
+import online_shop.shared.MD5Digest;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -15,29 +16,35 @@ public class DatabaseSupplier {
 
     String supplierName;
 
+    private MD5Digest md5Digest = new MD5Digest();
+
     public DatabaseSupplier(String supplierName) {
         this.supplierName = supplierName;
     }
 
     public Account logIn(String username, String password) {
         Account account = null;
-        dbConn.setConnection();
-        try (PreparedStatement myStmt = dbConn.conn.prepareStatement("SELECT * FROM [Account] WHERE [Email] = ? AND [Password] = ?")) {
-            myStmt.setString(1, username);
-            myStmt.setString(2, password);
-            try (ResultSet myRs = myStmt.executeQuery()) {
-                while (myRs.next()) {
-                    account = new Account(
-                            myRs.getInt("ID"),
-                            AccountType.valueOf(myRs.getString("AccountType")),
-                            myRs.getString("Name"),
-                            myRs.getString("Email"));
+        String digestedPassword = md5Digest.digest(password);
+        if (digestedPassword != null) {
+            dbConn.setConnection();
+            try (PreparedStatement myStmt = dbConn.conn.prepareStatement("SELECT * FROM [Account] WHERE [Email] = ? AND [Password] = ? AND [AccountType] = ? ")) {
+                myStmt.setString(1, username);
+                myStmt.setString(2, digestedPassword);
+                myStmt.setString(3, AccountType.SUPPLIEREMPLOYEE.toString());
+                try (ResultSet myRs = myStmt.executeQuery()) {
+                    while (myRs.next()) {
+                        account = new Account(
+                                myRs.getInt("ID"),
+                                AccountType.valueOf(myRs.getString("AccountType")),
+                                myRs.getString("Name"),
+                                myRs.getString("Email"));
+                    }
                 }
+            } catch (SQLException ex) {
+                LOGGER.info(ex.getMessage());
+            } finally {
+                dbConn.closeConnection();
             }
-        } catch (SQLException ex) {
-            LOGGER.info(ex.getMessage());
-        } finally {
-            dbConn.closeConnection();
         }
         return account;
     }

@@ -15,6 +15,7 @@ public class Product implements IProduct {
         this.amount = amount;
         this.edition = edition;
     }
+
     public Product(Integer id, String name, Double purchasePrice, Integer amount, Integer edition) {
         this.id = id;
         this.name = name;
@@ -39,7 +40,7 @@ public class Product implements IProduct {
         this.name = name;
     }
 
-    public void setId(int id){
+    public void setId(int id) {
         this.id = id;
     }
 

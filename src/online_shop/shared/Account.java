@@ -2,7 +2,7 @@ package online_shop.shared;
 
 import java.io.Serializable;
 
-public class Account implements Serializable{
+public class Account implements Serializable {
     Integer id;
     AccountType accountType;
     String name;
@@ -24,7 +24,7 @@ public class Account implements Serializable{
     }
 
     public String getName() {
-       return name;
+        return name;
     }
 
     public String getEmail() {

@@ -28,27 +28,27 @@ public class CartProductTable {
         updatePrice();
     }
 
-    public String getName(){
+    public String getName() {
         return this.name.get();
     }
 
-    public void setName(String name){
+    public void setName(String name) {
         this.name.set(name);
     }
 
-    public Double getTotalPrice(){
+    public Double getTotalPrice() {
         return this.totalPrice.get();
     }
 
-    public void setTotalPrice(Double price){
+    public void setTotalPrice(Double price) {
         this.totalPrice.set(price);
     }
 
-    public Integer getCartAmount(){
+    public Integer getCartAmount() {
         return this.cartAmount.get();
     }
 
-    public void setCartAmount(Integer amount){
+    public void setCartAmount(Integer amount) {
         this.cartAmount.set(amount);
         updatePrice();
     }

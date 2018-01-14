@@ -35,6 +35,8 @@ public class ClientFX extends Application {
     ObservableList<ShopProduct> observeProducts;
     ObservableList<CartProductTable> cartProducts;
 
+    private String shopName = "";
+
     public static void main(String args[]) {
         launch(args);
     }
@@ -66,10 +68,13 @@ public class ClientFX extends Application {
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
+
+            this.shopName = shopName;
             LoginWindow loginWindow = new LoginWindow(client, shopName);
             loginWindow.loginStage.setOnHidden(event -> showApplication(primaryStage));
             primaryStage.setOnCloseRequest(e -> exitApplication());
             loginWindow.loginStage.setOnCloseRequest(e -> exitApplication());
+
         }
     }
 
@@ -221,6 +226,7 @@ public class ClientFX extends Application {
         hbBtns.setAlignment(Pos.CENTER);
         Button btnLogout = new Button("Log out");
         btnLogout.setOnAction(e -> {
+            client.logOut();
             primaryStage.close();
             restartApplication(primaryStage);
         });
@@ -237,10 +243,11 @@ public class ClientFX extends Application {
         });
         root.getChildren().add(grid);
         // Define title and assign the scene for main window
-        primaryStage.setTitle("Client");
+        primaryStage.setTitle("Client: " + shopName);
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
         primaryStage.show();
+        primaryStage.setOnCloseRequest(e -> client.logOut());
     }
 
     private void exitApplication() {

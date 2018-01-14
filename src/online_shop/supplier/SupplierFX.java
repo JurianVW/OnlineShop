@@ -32,6 +32,8 @@ public class SupplierFX extends Application {
     private float sceneWidth = 500;
     private float sceneHeight = 500;
 
+    private String supplierName = "";
+
     private ObservableList<ProductTable> observeProducts;
 
     public static void main(String args[]) {
@@ -67,6 +69,7 @@ public class SupplierFX extends Application {
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
+            this.supplierName = supplierName;
 
             observeProducts = FXCollections.observableArrayList();
             resetList();
@@ -222,7 +225,7 @@ public class SupplierFX extends Application {
         });
         root.getChildren().add(grid);
         // Define title and assign the scene for main window
-        primaryStage.setTitle("Supplier");
+        primaryStage.setTitle("Supplier: " + supplierName);
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
         primaryStage.show();

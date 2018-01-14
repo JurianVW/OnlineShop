@@ -84,6 +84,10 @@ public class ClientCommunicator extends UnicastRemoteObject implements IRemotePr
         return shop.logIn(username, password, session);
     }
 
+    public void logOut(String session) throws RemoteException {
+        shop.logOut(session);
+    }
+
     public Boolean register(String name, String email, String password) throws RemoteException {
         return shop.register(name, email, password);
     }

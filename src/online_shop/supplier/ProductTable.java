@@ -8,11 +8,11 @@ import online_shop.supplier.Product;
 
 public class ProductTable implements IProduct {
     private final SimpleStringProperty name;
-     private final SimpleIntegerProperty id;
-     private final SimpleDoubleProperty purchasePrice;
-     private final SimpleIntegerProperty amount;
-     private final SimpleIntegerProperty edition;
-     private Product product;
+    private final SimpleIntegerProperty id;
+    private final SimpleDoubleProperty purchasePrice;
+    private final SimpleIntegerProperty amount;
+    private final SimpleIntegerProperty edition;
+    private Product product;
 
     public ProductTable(Product product) {
         this.name = new SimpleStringProperty(product.getName());
@@ -27,7 +27,7 @@ public class ProductTable implements IProduct {
         return name.get();
     }
 
-    public void setName(String name){
+    public void setName(String name) {
         this.name.set(name);
     }
 
@@ -59,7 +59,7 @@ public class ProductTable implements IProduct {
         this.edition.set(edition);
     }
 
-    public Product getProduct(){
+    public Product getProduct() {
         return this.product;
     }
 }

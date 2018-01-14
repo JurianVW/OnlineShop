@@ -98,7 +98,7 @@ public class Supplier extends UnicastRemoteObject implements ISupplier {
 
     public void productChanged(Product product) {
         database.productChanged(product);
-        informChangedProduct(product);
+      //  informChangedProduct(product);
         this.products = database.getProducts();
     }
 
@@ -117,8 +117,9 @@ public class Supplier extends UnicastRemoteObject implements ISupplier {
         //TODO: better code
     }
 
-    public void orderProducts(List<Product> products) {
+    public Boolean orderProducts(List<Product> products) {
         suppliefFX.orderProducts(products);
+        return true;
     }
 
     private void informNewProduct(Product product) {

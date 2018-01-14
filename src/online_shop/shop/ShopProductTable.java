@@ -30,7 +30,7 @@ public class ShopProductTable implements IShopProduct {
         return name.get();
     }
 
-    public void setName(String name){
+    public void setName(String name) {
         this.name.set(name);
     }
 
@@ -78,7 +78,7 @@ public class ShopProductTable implements IShopProduct {
         this.description.set(description);
     }
 
-    public ShopProduct getShopProduct(){
+    public ShopProduct getShopProduct() {
         return this.shopProduct;
     }
 }

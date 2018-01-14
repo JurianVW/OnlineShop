@@ -17,21 +17,10 @@ class SupplierTest {
     int portNr = 1080;
     String supplierName = "TestSupplier";
 
-    @Test
-    void addProduct() {
-        try {
-            SupplierFX supplierFX = new SupplierFX();
-            Supplier supplier = new Supplier(supplierFX, portNr, supplierName);
+    String databaseUsername = "test@test.nl";
+    String databasePassword = "Test";
 
-            Integer beginSize = supplier.getProducts().size();
-
-            supplier.addProduct(new Product("Steelbook", 45.4, 400, 600));
-
-            Assertions.assertEquals((beginSize + 1), supplier.getProducts().size());
-        } catch (RemoteException e) {
-            Assertions.fail("Unable to create supplier");
-        }
-    }
+    Product testProduct = new Product(20, "TestProduct", 45.4, 400, 600);
 
     @Test
     void removeProduct() {
@@ -41,9 +30,24 @@ class SupplierTest {
 
             Integer beginSize = supplier.getProducts().size();
 
-            supplier.removeProduct(supplier.getProducts().get(0));
+            supplier.removeProduct(testProduct);
 
             Assertions.assertEquals((beginSize - 1), supplier.getProducts().size());
+        } catch (RemoteException e) {
+            Assertions.fail("Unable to create supplier");
+        }
+    }
+
+    @Test
+    void addProduct() {
+        try {
+            SupplierFX supplierFX = new SupplierFX();
+            Supplier supplier = new Supplier(supplierFX, portNr, supplierName);
+
+            Integer beginSize = supplier.getProducts().size();
+
+            supplier.addProduct(testProduct);
+            Assertions.assertEquals((beginSize + 1), supplier.getProducts().size());
         } catch (RemoteException e) {
             Assertions.fail("Unable to create supplier");
         }
@@ -57,11 +61,17 @@ class SupplierTest {
 
             Integer beginSize = supplier.getProducts().size();
 
-            Product product = supplier.getProducts().get(0);
-            product.setName("Steelbook blah");
-            supplier.productChanged(product);
+            testProduct.setName("Steelbook blah");
+            supplier.productChanged(testProduct);
 
-            Assertions.assertEquals(true, supplier.getProducts().get(0).getName().equals(product.getName()));
+            Product result = null;
+            for (Product p : supplier.getProducts()) {
+                if (p.getId() == testProduct.getId()) {
+                    result = p;
+                }
+            }
+
+            Assertions.assertEquals(true, result.getName().equals(testProduct.getName()));
         } catch (RemoteException e) {
             Assertions.fail("Unable to create supplier");
         }
@@ -73,12 +83,16 @@ class SupplierTest {
             SupplierFX supplierFX = new SupplierFX();
             Supplier supplier = new Supplier(supplierFX, portNr, supplierName);
 
-            if (!supplier.logIn("Jurian", "hoi")) {
-                Assertions.fail("Login failed when has to be succes");
+            if (!supplier.logIn(databaseUsername, databasePassword)) {
+                Assertions.fail("Login failed when has to be success");
             }
 
-            if (supplier.logIn("Jur", "blahblahblah")) {
-                Assertions.fail("Login succedded when has to be failed");
+            if (supplier.logIn(databaseUsername, "wrongPassword")) {
+                Assertions.fail("Login success when has to be failed");
+            }
+
+            if (supplier.logIn("wrongUsername", databasePassword)) {
+                Assertions.fail("Login success when has to be failed");
             }
         } catch (RemoteException e) {
             Assertions.fail("Unable to create supplier");

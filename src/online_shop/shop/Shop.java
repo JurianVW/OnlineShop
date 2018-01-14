@@ -34,8 +34,16 @@ public class Shop extends UnicastRemoteObject implements IShop {
         return database.getShopProducts();
     }
 
-    public void updateSupplierProducts(List<Product> products) {
+    private void updateSupplierProducts(List<Product> products) {
         database.updateSupplierProducts(products);
+    }
+
+    public void reconnectToSuppliers() {
+        for (String s : database.getShopSuppliers()) {
+            shopCommunicator.unsubscribeFromSupplier(s);
+            shopCommunicator.subscribeToSupplier(s);
+        }
+        updateFX();
     }
 
     public void addShopProduct(Product product) {
@@ -58,39 +66,65 @@ public class Shop extends UnicastRemoteObject implements IShop {
     public void productRemoved(Product product) {
         shopCommunicator.informRemovedShopProduct(product.getId());
         database.removeSupplierProduct(product);
-
         updateFX();
     }
 
     public void orderProducts(List<ShopProduct> shopProducts, Integer accountId, String session) {
+        Boolean orderSucces = false;
         if (accountSessions.get(session).equals(accountId)) {
             try {
-                shopCommunicator.orderProducts(shopProducts);
+                orderSucces = shopCommunicator.orderProducts(shopProducts);
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
+            if(orderSucces){
+                for (ShopProduct sp:shopProducts                     ) {
+                    sp.sell(1);
+                    shopProductChanged(sp);
+                }
+            }
+            updateFX();
         }
     }
 
+    public void addShopSupplier(String supplierName) {
+        database.addShopSupplier(supplierName);
+        shopCommunicator.subscribeToSupplier(supplierName);
+        for (Product p : database.getSupplierProducts(supplierName)) {
+            addShopProduct(p);
+        }
+        updateFX();
+    }
+
+    public void removeShopSupplier(String supplierName) {
+        shopCommunicator.unsubscribeFromSupplier(supplierName);
+        database.removeShopSupplier(supplierName);
+        for (Product p : database.getSupplierProducts(supplierName)) {
+            productRemoved(p);
+        }
+        updateFX();
+    }
+
+    public List<String> getShopSuppliers() {
+        return database.getShopSuppliers();
+    }
+
     public Account logIn(String username, String password, String session) {
-        Account a = database.logIn(username, password);
+        Account a = database.logIn(username, password, false);
         if (a != null) {
-            if (a.getAccountType() == AccountType.CUSTOMER) {
+            if (!accountSessions.contains(a.getId())) {
                 accountSessions.put(session, a.getId());
                 return a;
             }
-
         }
         return null;
     }
 
     public boolean logInShop(String username, String password) {
-        Account a = database.logIn(username, password);
+        Account a = database.logIn(username, password, true);
         if (a != null) {
-            if (a.getAccountType() == AccountType.SHOPEMPLOYEE) {
-                this.account = a;
-                return true;
-            }
+            this.account = a;
+            return true;
         }
         return false;
     }
